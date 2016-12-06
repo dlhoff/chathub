@@ -1,13 +1,15 @@
 package edu.sfsu.csc780.chathub.ui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentTransaction;
+// import android.support.v4.app.DialogFragment;
+// import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,9 +17,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
+// import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -39,6 +42,7 @@ import edu.sfsu.csc780.chathub.R;
 public class MessageUtil {
     private static final String LOG_TAG = MessageUtil.class.getSimpleName();
     public static final String MESSAGES_CHILD = "messages";
+    public static String mMessagesChild = MESSAGES_CHILD;
     private static DatabaseReference sFirebaseDatabaseReference =
             FirebaseDatabase.getInstance().getReference();
     private static FirebaseStorage sStorage = FirebaseStorage.getInstance();
@@ -47,7 +51,7 @@ public class MessageUtil {
     public interface MessageLoadListener { public void onLoadComplete(); }
 
     public static void send(ChatMessage chatMessage) {
-        sFirebaseDatabaseReference.child(MESSAGES_CHILD).push().setValue(chatMessage);
+        sFirebaseDatabaseReference.child(mMessagesChild).push().setValue(chatMessage);
     }
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
@@ -58,6 +62,7 @@ public class MessageUtil {
         public CircleImageView messengerImageView;
         public TextView timestampTextView;
         public View messageLayout;
+        public ImageView messageAudioIcon;
         public MessageViewHolder(View v) {
             super(v);
             messageTextView = (TextView) itemView.findViewById(R.id.messageTextView);
@@ -66,6 +71,7 @@ public class MessageUtil {
             messageImageView = (ImageView) itemView.findViewById(R.id.messageImageView);
             timestampTextView = (TextView) itemView.findViewById(R.id.timestampTextView);
             messageLayout = (View) itemView.findViewById(R.id.messageLayout);
+            messageAudioIcon = (ImageView) itemView.findViewById(R.id.messageAudioIcon);
             v.setOnClickListener(sMessageViewListener);
         }
     }
@@ -84,10 +90,10 @@ public class MessageUtil {
                 ChatMessage.class,
                 R.layout.item_message,
                 MessageViewHolder.class,
-                sFirebaseDatabaseReference.child(MESSAGES_CHILD)) {
+                sFirebaseDatabaseReference.child(mMessagesChild)) {
             @Override
             protected void populateViewHolder(final MessageViewHolder viewHolder,
-                                              ChatMessage chatMessage, int position) {
+                                              final ChatMessage chatMessage, int position) {
                 sAdapterListener.onLoadComplete();
                 viewHolder.messageTextView.setText(chatMessage.getText());
                 viewHolder.messengerTextView.setText(chatMessage.getName());
@@ -122,10 +128,9 @@ public class MessageUtil {
                 }
 
                 if (chatMessage.getImageUrl() != null) {
-
                     viewHolder.messageImageView.setVisibility(View.VISIBLE);
                     viewHolder.messageTextView.setVisibility(View.GONE);
-
+                    viewHolder.messageAudioIcon.setVisibility(View.GONE);
                     try {
                         final StorageReference gsReference =
                                 sStorage.getReferenceFromUrl(chatMessage.getImageUrl());
@@ -146,8 +151,58 @@ public class MessageUtil {
                         viewHolder.messageTextView.setText("Error loading image");
                         Log.e(LOG_TAG, e.getMessage() + " : " + chatMessage.getImageUrl());
                     }
+                } else if (chatMessage.getAudioUrl() != null) {
+                    // Indicates audio message. Image view is off. Text and audio are on
+                    viewHolder.messageAudioIcon.setVisibility(View.VISIBLE);
+                    viewHolder.messageImageView.setVisibility(View.GONE);
+                    // Text message is on, only if there is a message. Optional with audio
+                    if (viewHolder.messageTextView.length() != 0) {
+                        viewHolder.messageTextView.setVisibility(View.VISIBLE);;
+                    } else {
+                        viewHolder.messageTextView.setVisibility(View.GONE);
+                    }
+                    // Add onClick listener. This allows user to click on audio icon and listen to the
+                    // recording
+                    viewHolder.messageAudioIcon.setClickable(true);
+                    viewHolder.messageAudioIcon.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            final View vI = v;
+                            try {
+                                final StorageReference gsReference =
+                                        sStorage.getReferenceFromUrl(chatMessage.getAudioUrl());
+                                gsReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        // If successful in obtaining audio file, then play recording
+                                        Intent iPA = new Intent();
+                                        iPA.setAction(android.content.Intent.ACTION_VIEW);
+                                        iPA.setDataAndType(uri, "audio/*");
+
+                                        PackageManager packageManager = activity.getPackageManager();
+                                        // Verifies that the implicit activity can be handled. If not, tell user by toast
+                                        if (iPA.resolveActivity(packageManager) != null) {
+                                            vI.getContext().startActivity(iPA);
+                                        } else {
+                                            Toast.makeText(activity, "Unable to play audio",
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception exception) {
+                                        Log.e(LOG_TAG, "Could not load audio for message", exception);
+                                    }
+                                });
+                            } catch (IllegalArgumentException e) {
+                                viewHolder.messageTextView.setText("Error loading audio");
+                                Log.e(LOG_TAG, e.getMessage() + " : " + chatMessage.getImageUrl());
+                            }
+                        }
+                    });
                 } else {
                     viewHolder.messageImageView.setVisibility(View.GONE);
+                    viewHolder.messageAudioIcon.setVisibility(View.GONE);
                     viewHolder.messageTextView.setVisibility(View.VISIBLE);
                 }
 
@@ -179,12 +234,11 @@ public class MessageUtil {
         return adapter;
     }
 
-    public static StorageReference getImageStorageReference(FirebaseUser user, Uri uri) {
+    public static StorageReference getStorageReference(FirebaseUser user, Uri uri) {
         //Create a blob storage reference with path : bucket/userId/timeMs/filename
         long nowMs = Calendar.getInstance().getTimeInMillis();
 
         return sStorage.getReference().child(user.getUid() + "/" + nowMs + "/" + uri
                 .getLastPathSegment());
     }
-
 }

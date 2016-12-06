@@ -19,21 +19,12 @@ import java.util.Date;
 
 public class ChatMessage {
 
+    public static final long NO_TIMESTAMP = -1;
     private String text;
     private String name;
     private String photoUrl;
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
+    private String audioUrl;
     private long timestamp;
-    public static final long NO_TIMESTAMP = -1;
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
     private String imageUrl;
 
     public ChatMessage() {
@@ -44,11 +35,17 @@ public class ChatMessage {
         this.name = name;
         this.photoUrl = photoUrl;
         this.timestamp = new Date().getTime();
+        this.audioUrl = null;
     }
 
     public ChatMessage(String text, String name, String photoUrl, String imageUrl) {
         this(text, name, photoUrl);
         this.imageUrl = imageUrl;
+    }
+
+    public ChatMessage(String text, String name, String photoUrl, String imageUrl, String audioUrl) {
+        this(text, name, photoUrl, imageUrl);
+        this.audioUrl = audioUrl;
     }
 
     public String getText() {
@@ -73,5 +70,17 @@ public class ChatMessage {
 
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
     }
 }

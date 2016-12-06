@@ -3,6 +3,9 @@
     package="edu.sfsu.csc780.chathub">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -11,18 +14,17 @@
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCrGjyA7H45nVyhKGdOe-RsPiNaofuE8rs" />
-        <activity android:name=".ui.MainActivity">
+            android:value="AIzaSyDgmlo0GdOjWIEkuptuGkRNCt5yxeA6Pv4" />
+        <activity android:name=".ui.MainActivity"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".ui.SignInActivity" />
-
         <activity android:name=".ui.PreferencesActivity" />
-
+        <activity android:name=".ui.PickLocationActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.PickGraphicActivity" android:screenOrientation="portrait" />
     </application>
-
 </manifest>

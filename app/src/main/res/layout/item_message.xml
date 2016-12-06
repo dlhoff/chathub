@@ -50,9 +50,19 @@
                 tools:src="@drawable/ic_image_black_24px"
                 tools:visibility="visible"/>
 
+            <ImageView
+                android:id="@+id/messageAudioIcon"
+                android:layout_width="fill_parent"
+                android:layout_height="26dp"
+                android:layout_marginTop="10dp"
+                android:scaleType="fitStart"
+                android:visibility="gone"
+                android:src="@drawable/ic_audio_black_24px" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <TextView
                     android:id="@+id/messengerTextView"
                     android:layout_width="wrap_content"
@@ -63,6 +73,7 @@
                     tools:text="John Doe"
                     android:gravity="start"
                     android:layout_marginBottom="5dp"/>
+
                 <TextView
                     android:id="@+id/timestampTextView"
                     android:layout_width="wrap_content"
@@ -75,8 +86,5 @@
                     android:layout_marginBottom="5dp"/>
             </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
-
-
 </LinearLayout>

@@ -7,4 +7,21 @@
     <string name="preferences_menu_label">Preferences</string>
     <string name="auto_palette_preference">autoPalette</string>
     <string name="color_scheme_preference">colorScheme</string>
+    <string name="select_graphic_text">Select Graphic</string>
+    <string name="view_gesture_emojis">View Gesture Emojis</string>
+    <string name="gesture_header_type">Type</string>
+    <string name="gesture_header_emoji">Emoji</string>
+    <string name="gesture_header_delete">Delete</string>
+    <string name="emoji_select">Select Emoji</string>
+    <string name="default_chat">none</string>
+    <string name="chat_dialog">Enter Chat Group</string>
+    <string name="chat_group_text">Group:</string>
+    <string name="gesture_capture_title">Capture Gesture</string>
+    <string name="gesture_capture_message">Click \'Capture\' button. Then make gesture for 1 second</string>
+    <string name="gesture_capture">Capture</string>
+    <string name="gesture_captured_report"> gesture captured</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="None">None</string>
+    <string name="none">none</string>
 </resources>

@@ -31,6 +31,17 @@
             android:layout_height="wrap_content"
             android:inputType="textMultiLine"
             android:paddingTop="20dp"/>
+
+        <TextView
+            android:id="@+id/chatGroupText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text=""
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:paddingTop="12dp" />
+
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
@@ -41,12 +52,21 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"/>
 
+            <TextView
+                android:id="@+id/emojiTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="12dp"
+                android:padding="10dp"
+                android:textSize="24sp"
+                android:text=""/>
+
             <ImageButton
                 android:id="@+id/cameraButton"
                 android:src="@drawable/ic_camera_alt_black_24px"
                 android:background="@drawable/button_ripple"
                 android:layout_gravity="center_vertical"
-                android:padding="16dp"
+                android:padding="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -55,7 +75,7 @@
                 android:src="@drawable/ic_my_location_black_24px"
                 android:background="@drawable/button_ripple"
                 android:layout_gravity="center_vertical"
-                android:padding="16dp"
+                android:padding="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -64,7 +84,17 @@
                 android:src="@drawable/ic_image_black_24px"
                 android:background="@drawable/button_ripple"
                 android:layout_gravity="center"
-                android:padding="16dp"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <ImageButton
+                android:id="@+id/bottomOverflow"
+                android:src="@drawable/overflow_black_24px"
+                android:background="@drawable/button_ripple"
+                android:layout_gravity="center"
+                android:padding="10dp"
+                android:paddingRight="16dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -74,7 +104,6 @@
                 android:layout_width="wrap_content"
                 android:src="@drawable/ic_send_black_24"/>
         </LinearLayout>
-
     </LinearLayout>
 
     <ProgressBar
@@ -84,4 +113,5 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"/>
+
 </RelativeLayout>
