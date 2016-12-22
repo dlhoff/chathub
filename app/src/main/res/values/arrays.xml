@@ -10,4 +10,40 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+    <string-array name="langNameArray">
+        <item>None</item>
+        <item>French</item>
+        <item>German</item>
+        <item>Hindi</item>
+        <item>Italian</item>
+        <item>Polish</item>
+        <item>Portuguese</item>
+        <item>Spanish</item>
+        <item>Swahili</item>
+        <item>Russian</item>
+    </string-array>
+    <string-array name="langCodeArray">
+        <item>en</item>
+        <item>fr</item>
+        <item>de</item>
+        <item>hi</item>
+        <item>it</item>
+        <item>pl</item>
+        <item>pt</item>
+        <item>es</item>
+        <item>sw</item>
+        <item>ru</item>
+    </string-array>
+    <string-array name="langValueArray">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+    </string-array>
 </resources>

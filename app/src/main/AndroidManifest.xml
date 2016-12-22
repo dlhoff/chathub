@@ -26,5 +26,6 @@
         <activity android:name=".ui.PreferencesActivity" />
         <activity android:name=".ui.PickLocationActivity" android:screenOrientation="portrait" />
         <activity android:name=".ui.PickGraphicActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.PickChatActivity" android:screenOrientation="portrait" />
     </application>
 </manifest>

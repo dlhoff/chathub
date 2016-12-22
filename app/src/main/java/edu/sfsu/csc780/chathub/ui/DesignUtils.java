@@ -73,6 +73,19 @@ public class DesignUtils {
     }
 
     /**
+     * Get the language translation choice
+     * @param context
+     * @return
+     */
+    public static int getLangTrans(Context context) {
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences
+                (context);
+        final String preferenceName = context.getString(R.string.lang_choice);
+        String preferenceValue = preferences.getString(preferenceName, "0");
+        return Integer.parseInt(preferenceValue);
+    }
+
+    /**
      * Get the theme that is stored in our shared preferences
      * @param context
      * @return

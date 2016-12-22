@@ -7,6 +7,7 @@
     <string name="preferences_menu_label">Preferences</string>
     <string name="auto_palette_preference">autoPalette</string>
     <string name="color_scheme_preference">colorScheme</string>
+    <string name="lang_choice">langChoice</string>
     <string name="select_graphic_text">Select Graphic</string>
     <string name="view_gesture_emojis">View Gesture Emojis</string>
     <string name="gesture_header_type">Type</string>
@@ -22,6 +23,12 @@
     <string name="gesture_captured_report"> gesture captured</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="create">Create</string>
     <string name="None">None</string>
     <string name="none">none</string>
+    <string name="select_chat_header">Select Chat or Create New</string>
+    <string name="select_chat_hint">Enter New Name, Click \'Create\'</string>
+    <string name="only_alpha_numeric">Only Alphanumeric characters allowed</string>
+    <string name="duplicate_chat">Duplicate Chat Name</string>
+    <string name="unable_record">Unable to record audio</string>
 </resources>

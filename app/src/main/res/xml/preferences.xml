@@ -12,4 +12,10 @@
                         android:defaultValue="1"
                         android:entries="@array/listArray"
                         android:entryValues="@array/listValues" />
+    <ListPreference     android:title="Translation Language"
+                        android:summary="Select the translation language"
+                        android:key="@string/lang_choice"
+                        android:defaultValue="0"
+                        android:entries="@array/langNameArray"
+                        android:entryValues="@array/langValueArray" />
 </PreferenceScreen>

@@ -113,16 +113,17 @@ public class MainActivity extends AppCompatActivity
     public static final int REQUEST_P_ON_P = 6;
     public static final int REQUEST_GET_LOCATION = 7;
     public static final int REQUEST_GET_GRAPHIC = 8;
-    private static final String EMOJI_FIRST_CHAR = "\uD83D";
+    public static final int REQUEST_GET_CHAT_NAME = 9;
+    public static final String EMOJI_FIRST_CHAR = "\uD83D";
     private static final String EMOJI_ICON_CHAR = "\ud83d\ude04";
-    private static final int EMOJI_UNICODE_BASE = 0xDE00;
+    public static final int EMOJI_UNICODE_BASE = 0xDE00;
     private static final float MAX_GESTURE_SCALE = 1.0f;
     private static final float GYRO_TO_ACC_RATIO = 2f;
     private static final float MINIMUM_GYRO = 8f;
     private static final float MINIMUM_ACC = 16f;
     private static final int EMOJI_TO_MESSAGE = 1;
     private static final int EMOJI_TO_GESTURE = 2;
-    private static final int EM_COUNT = 25;
+    public static final int EM_COUNT = 25;
 
     private String mUsername;
     private String mPhotoUrl;
@@ -145,6 +146,7 @@ public class MainActivity extends AppCompatActivity
     private ImageButton mImageButton;
     private ImageButton mPhotoButton;
     private int mSavedTheme;
+    private int mSavedLang;
     private int mCapturedTextLength;
     private ImageButton mLocationButton;
     private ImageButton mOverflowButton;
@@ -172,6 +174,7 @@ public class MainActivity extends AppCompatActivity
     private float [] mGesStrength;
     private String [] mGesString;
     private String [] mGesMsg;
+    private String mPriorChatGroup;
 
     private View.OnClickListener mImageClickListener = new View.OnClickListener() {
         @Override
@@ -189,6 +192,8 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         DesignUtils.applyColorfulTheme(this);
+        MessageUtil.initLangArray();
+        MessageUtil.sTransLang = DesignUtils.getLangTrans(this);
         setContentView(R.layout.activity_main);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mSharedPrefEditor = mSharedPreferences.edit();
@@ -321,6 +326,7 @@ public class MainActivity extends AppCompatActivity
 
         // Holds chat group name. Not visible when default chat group
         mChatGroupTextView = (TextView) findViewById(R.id.chatGroupText);
+        mChatGroupTextView.setVisibility(View.GONE);
 
         // Overflow button of 3 vertical dots used to display 4 other options
         mOverflowButton = (ImageButton) findViewById(R.id.bottomOverflow);
@@ -331,7 +337,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        // Read shared perferences for state of gesture enable or disable
+        // Read shared preferences for state of gesture enable or disable
         mGestureEnable = mSharedPreferences.getBoolean("GesEnable", false);
 
         // Setup Acc & Gyro sensors for gestures
@@ -475,6 +481,8 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+        reloadChat();
+        MessageUtil.loadLangArray();
     }
 
     @Override
@@ -487,12 +495,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onPause() {
         super.onPause();
+        // Implementation to support turning off sensors during Pause
+        mSensorManager.unregisterListener(mSensorListener, mSensorAccelerometer);
+        mSensorManager.unregisterListener(mSensorListener, mSensorGyro);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         LocationUtils.startLocationUpdates(this);
+        // Implementation to turn on sensors on Resume if appropriate
+        updateSensors(false);
     }
 
     @Override
@@ -528,6 +541,7 @@ public class MainActivity extends AppCompatActivity
                 return true;
             case R.id.preferences_menu:
                 mSavedTheme = DesignUtils.getPreferredTheme(this);
+                mSavedLang = MessageUtil.sTransLang;
                 Intent i = new Intent(this, PreferencesActivity.class);
                 startActivityForResult(i, REQUEST_PREFERENCES);
             default:
@@ -649,7 +663,7 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(iRA, REQUEST_RECORD_AUDIO);
         } else {
             // If device does not support audio recording, notify user
-            Toast.makeText(this, "Unable to record audio",
+            Toast.makeText(this, getResources().getString(R.string.unable_record),
                     Toast.LENGTH_LONG).show();
         }
     }
@@ -1032,8 +1046,7 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "Has not Accelerometer");
             }
             */
-            hasSensor = mSensorManager
-                    .registerListener(mSensorListener, mSensorGyro, SensorManager.SENSOR_DELAY_NORMAL);
+            hasSensor = mSensorManager.registerListener(mSensorListener, mSensorGyro, SensorManager.SENSOR_DELAY_NORMAL);
             /* Used for debug
             if (hasSensor) {
                 Log.d(TAG, "Has Gyroscope");
@@ -1046,6 +1059,49 @@ public class MainActivity extends AppCompatActivity
             mSensorManager.unregisterListener(mSensorListener, mSensorGyro);
         }
     }
+
+    // Obtain user graphic selection from activity designed for a better UI
+    private void setChatGroup() {
+        Intent intent = new Intent(this, PickChatActivity.class);
+        startActivityForResult(intent, REQUEST_GET_CHAT_NAME);
+    }
+
+    private void processChatGroup(String chatName) {
+        mPriorChatGroup = MessageUtil.mMessagesChild;
+        if (chatName.length() == 0) {
+            // Empty line means to switch back to the default chat group
+            MessageUtil.mMessagesChild = MessageUtil.MESSAGES_CHILD;
+            mChatGroupTextView.setVisibility(View.GONE);
+            Log.d(TAG, "=== chat group blank: " + MessageUtil.mMessagesChild);
+        } else {
+            // Otherwise redirect Firebase to the tag of the chat group
+            MessageUtil.mMessagesChild = chatName;
+            // Display chat group name
+            String tStr = getResources().getString(
+                    R.string.chat_group_text) + " " + MessageUtil.mMessagesChild;
+            mChatGroupTextView.setText(tStr);
+            mChatGroupTextView.setVisibility(View.VISIBLE);
+            // Log.d(TAG, "chat group entered: " + MessageUtil.mMessagesChild);
+        }
+        if (!mPriorChatGroup.equals(MessageUtil.mMessagesChild)) {
+            // Only change the adapter if chat group actually changed.
+            // Before doing this, recreating the adapter when it was the same chat group
+            // was causing the app to crash
+            // Log.d(TAG, "chat adapter changed");
+            mFirebaseAdapter = MessageUtil.getFirebaseAdapter(MainActivity.this,
+                    MainActivity.this,
+                    mLinearLayoutManager,
+                    mMessageRecyclerView,
+                    mImageClickListener);
+            mMessageRecyclerView.setAdapter(mFirebaseAdapter);
+        }
+    }
+
+
+    /**
+     * This version of setChatGroup has been replaced by one that calls an activity,
+     * PickChatActivity that provides a better user interface.
+     *
 
     // Be sure to put the following in the app build.gradle
     // compile 'com.android.support:recyclerview-v7:23.2.0'
@@ -1095,7 +1151,7 @@ public class MainActivity extends AppCompatActivity
                             if (!priorChatGroup.equals(MessageUtil.mMessagesChild)) {
                                 Log.d(TAG, "chat adapter changed");
                                 mFirebaseAdapter = MessageUtil.getFirebaseAdapter(MainActivity.this,
-                                        MainActivity.this,  /* MessageLoadListener */
+                                        MainActivity.this,
                                         mLinearLayoutManager,
                                         mMessageRecyclerView,
                                         mImageClickListener);
@@ -1117,7 +1173,7 @@ public class MainActivity extends AppCompatActivity
                         if (!priorChatGroup.equals(MessageUtil.mMessagesChild)) {
                             Log.d(TAG, "chat adapter changed");
                             mFirebaseAdapter = MessageUtil.getFirebaseAdapter(MainActivity.this,
-                                    MainActivity.this,  /* MessageLoadListener */
+                                    MainActivity.this,
                                     mLinearLayoutManager,
                                     mMessageRecyclerView,
                                     mImageClickListener);
@@ -1130,13 +1186,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void chatToast() {
-        Toast.makeText(this, "Only Alphanumeric characters allowed.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Only Alphanumeric characters allowed", Toast.LENGTH_SHORT).show();
     }
+
+     */
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult: request=" + requestCode + ", result=" + resultCode);
+        // Log.d(TAG, "onActivityResult: request=" + requestCode + ", result=" + resultCode);
 
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             // Process selected image here
@@ -1216,8 +1274,16 @@ public class MainActivity extends AppCompatActivity
                 Log.e(TAG, "Cannot get photo URI after taking photo");
             }
         } else if (requestCode == REQUEST_PREFERENCES) {
+            Boolean flag = false;
+            if (DesignUtils.getLangTrans(this) != mSavedLang) {
+                MessageUtil.sTransLang = DesignUtils.getLangTrans(this);
+                flag = true;
+            }
             if (DesignUtils.getPreferredTheme(this) != mSavedTheme) {
                 DesignUtils.applyColorfulTheme(this);
+                flag = true;
+            }
+            if (flag) {
                 this.recreate();
             }
         } else if (requestCode == REQUEST_RECORD_AUDIO) {
@@ -1245,6 +1311,27 @@ public class MainActivity extends AppCompatActivity
                     Log.i(TAG, "Pick Emoji returned data object is null");
                 }
             }
+        } else if (requestCode == REQUEST_GET_CHAT_NAME) {
+            // if resultCode is not Activity.RESULT_OK, then the change chat group was canceled.
+            reloadChat();
+            if (resultCode == Activity.RESULT_OK) {
+                processChatGroup(data.getStringExtra("chatName"));
+            }
+        }
+    }
+
+    private void reloadChat() {
+        Log.d(TAG, "=== Inside reloadChat m/M: " + MessageUtil.mMessagesChild + " " + MessageUtil.MESSAGES_CHILD);
+        mChatGroupTextView = (TextView) findViewById(R.id.chatGroupText);
+        if (MessageUtil.mMessagesChild == MessageUtil.MESSAGES_CHILD) {
+            Log.d(TAG, "=== Inside reloadChat match");
+            mChatGroupTextView.setVisibility(View.GONE);
+        } else {
+            String tStr = getResources().getString(
+                    R.string.chat_group_text) + " " + MessageUtil.mMessagesChild;
+            mChatGroupTextView.setText(tStr);
+            mChatGroupTextView.setVisibility(View.VISIBLE);
+            Log.d(TAG, "=== Inside reloadChat no match");
         }
     }
 
@@ -1454,4 +1541,5 @@ public class MainActivity extends AppCompatActivity
 
         dialogFragment.show(ft, "dialog");
     }
+
 }

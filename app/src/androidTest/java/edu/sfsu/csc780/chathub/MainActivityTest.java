@@ -164,7 +164,7 @@ public class MainActivityTest {
         // Click on chat group button
         onView(withId(R.id.chatGroupButton)).perform(click());
         // Verify that chat group dialog modal appears
-        onView(withText("Enter Chat Group")).check(matches(isDisplayed()));
+        onView(withText(R.string.select_chat_header)).check(matches(isDisplayed()));
         // Go back to main UI
         pressBack();
     }
@@ -176,10 +176,10 @@ public class MainActivityTest {
         // Click on chat group button
         onView(withId(R.id.chatGroupButton)).perform(click());
         // Select the chat1 group
-        onView(withId(R.id.chatDialogEditText)).perform(typeText("chat1"),
+        onView(withId(R.id.chatNameEditText)).perform(typeText("chat1"),
                 closeSoftKeyboard());
         //Perform a click to select that chat group
-        onView(withText("OK")).perform(click());
+        onView(withText("Create")).perform(click());
         // Verify that chat1 group is dispalyed
         onView(withText("Group: chat1")).check(matches(isDisplayed()));
     }
